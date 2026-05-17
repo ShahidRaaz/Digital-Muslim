@@ -1,0 +1,124 @@
+/* Prayer Status Section */
+.prayer-status-section {
+  display: flex;
+  justify-content: space-between;
+  gap: 1px;
+  padding: 12px;
+  margin-bottom: 0;
+  background-color: var(--card-bg);
+  border-radius: 10px;
+  overflow: hidden;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.status-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0px;
+  width: 100%;
+  /* border: 1px solid red; */
+  padding:0px;
+  text-align: center;
+}
+
+.status-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+.status-prayer {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Prayer Grid Section */
+.prayer-grid-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.prayer-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.prayer-row:last-child {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.prayer-time-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: var(--card-bg);
+  border-radius: 10px;
+}
+
+.prayer-time-icon {
+  font-size: 20px;
+  opacity: 0.8;
+  flex-shrink: 0;
+  min-width: 24px;
+}
+
+.prayer-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+  order: 2;
+}
+
+.prayer-time-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+}
+
+.prayer-time-name {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  letter-spacing: 0.2px;
+}
+
+.prayer-time-value {
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.prayer-time-item.current .prayer-time-name, .prayer-time-now{
+  font-size: 18px;
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+
+.prayer-time-item.current .prayer-time-value {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+
+/* Responsive */
+@media (max-width: 345px) {
+  .prayer-row {
+    grid-template-columns: 1fr;
+  }
+}

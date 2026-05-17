@@ -1,0 +1,50 @@
+/* Footer Section */
+.footer-section {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--card-bg);
+}
+
+.wsb {
+  border: none;
+  background: var(--card-bg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wsb:hover {
+ background: var(--bg-primary);
+}
+
+.footer-text {
+  font-size: 12px;
+  color: var(--text-primary);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.footer-icon {
+  width: 20px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 345px) {
+  .footer-text {
+    font-size: 7px;
+  }
+}

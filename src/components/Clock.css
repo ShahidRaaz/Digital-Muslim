@@ -1,0 +1,92 @@
+/* Timer Section */
+.timer-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 5px;
+  flex-shrink: 0;
+}
+
+.timer-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.timer-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0px;
+  background: var(--card-bg);
+  padding: 8px 8px 8px 8px;
+  border-radius: 10px;
+  width: 80px;
+}
+
+.timer-value {
+  font-size: 48px;
+  font-weight: 700;
+  font-family: 'Product Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.timer-separator {
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 2px;
+}
+
+.timer-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: lowercase;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.timer-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+.day-badge,
+.ampm-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.clock-icon {
+  color: var(--accent-primary);
+  width: 16px;
+  height: 16px;
+}
+
+/* Responsive - only at minimum window width */
+@media (max-width: 345px) {
+  .timer-value {
+    font-size: 36px;
+  }
+
+  .timer-separator {
+    font-size: 30px;
+  }
+
+  .timer-unit {
+    width: 68px;
+  }
+}

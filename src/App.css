@@ -1,0 +1,31 @@
+/* Light Mode Colors */
+:root,
+[data-theme="light"] {
+  --bg-primary: rgba(240, 247, 247, 1);
+  --stroke: #ffffff;
+  --text-primary: #333333;
+  --text-secondary: #444444;
+  --card-bg: #ffffff;
+  --card-border: #e0e0e0;
+  --accent-primary: #008080;
+  --accent-light: #13b8b8;
+  --logo-bg: #008080;
+  --logo-text: #ffffff;
+  --border: rgba(255, 255, 255, 0.75);
+}
+
+/* Dark Mode Colors */
+[data-theme="dark"] {
+  --bg-primary: rgba(0, 47, 47, 1);
+  --stroke: #333333;
+  --text-primary: #ffffff;
+  --text-secondary: #d9d9d9;
+  --card-bg: rgba(83, 228, 162, 0.05);
+  --card-border: rgba(83, 228, 162, 0.1);
+  --accent-primary: #53e4a2;
+  --accent-light: #1dd9d9;
+  --logo-bg: rgba(83, 228, 162, 0.1);
+  --logo-text: #53e4a2;
+  --border: rgba(0, 0, 0, 0.5);
+}
+
