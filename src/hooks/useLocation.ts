@@ -16,6 +16,11 @@ const FALLBACK_LOCATION: Location = {
   timezone: 'Asia/Riyadh',
 };
 
+// Stop early once a fix is at least this accurate (metres)
+const TARGET_ACCURACY_M = 50;
+// Maximum time to keep refining the position before using the best fix so far
+const MAX_LOCATION_WAIT_MS = 20000;
+
 function readCachedLocation(): Location | null {
   try {
     const raw = localStorage.getItem(AUTO_LOCATION_CACHE_KEY);
@@ -48,6 +53,49 @@ function writeCachedLocation(location: Location) {
   try {
     localStorage.setItem(AUTO_LOCATION_CACHE_KEY, JSON.stringify(location));
   } catch {}
+}
+
+// The first fix is often a coarse Wi-Fi/IP estimate, so watch for a few seconds
+// and keep the most accurate reading instead of trusting the first one.
+function getBestPosition(): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    let best: GeolocationPosition | null = null;
+    let lastError: { code: number } | null = null;
+    let done = false;
+    let watchId = -1;
+
+    const finish = () => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      if (watchId !== -1) navigator.geolocation.clearWatch(watchId);
+      if (best) resolve(best);
+      else reject(lastError ?? { code: 3 });
+    };
+
+    const timer = setTimeout(finish, MAX_LOCATION_WAIT_MS);
+
+    watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        if (!best || position.coords.accuracy < best.coords.accuracy) {
+          best = position;
+        }
+        if (position.coords.accuracy <= TARGET_ACCURACY_M) {
+          finish();
+        }
+      },
+      (err) => {
+        lastError = err;
+        // Permission denied will not recover; other errors may, so keep waiting
+        if (err.code === 1) finish();
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: MAX_LOCATION_WAIT_MS,
+        maximumAge: 0, // Never reuse a cached (possibly coarse) position
+      }
+    );
+  });
 }
 
 async function getLocationName(latitude: number, longitude: number): Promise<{ name: string; timezone: string }> {
@@ -147,35 +195,29 @@ export function useLocation() {
         return;
       }
 
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          
-          // Reverse geocode the coordinates and get timezone
-          const { name, timezone } = await getLocationName(latitude, longitude);
-          const resolvedLocation = { latitude, longitude, name, timezone };
+      try {
+        const position = await getBestPosition();
+        const { latitude, longitude } = position.coords;
 
-          writeCachedLocation(resolvedLocation);
+        // Reverse geocode the coordinates and get timezone
+        const { name, timezone } = await getLocationName(latitude, longitude);
+        const resolvedLocation = { latitude, longitude, name, timezone };
 
-          if (isMounted) {
-            setLocation(resolvedLocation);
-            setLoading(false);
-          }
-        },
-        (err) => {
-          console.error('Geolocation error:', err);
-          if (isMounted) {
-            setError(err.code === 1 ? 'Location access denied.' : 'Location request timed out.');
-            setLocation(readCachedLocation() ?? FALLBACK_LOCATION);
-            setLoading(false);
-          }
-        },
-        {
-          enableHighAccuracy: true, // Forces exact GPS/WiFi location instead of rough IP location
-          timeout: 5000,
-          maximumAge: 60000, // Refresh location more frequently
+        writeCachedLocation(resolvedLocation);
+
+        if (isMounted) {
+          setLocation(resolvedLocation);
+          setLoading(false);
         }
-      );
+      } catch (err) {
+        console.error('Geolocation error:', err);
+        if (isMounted) {
+          const code = (err as { code?: number })?.code;
+          setError(code === 1 ? 'Location access denied.' : 'Location request timed out.');
+          setLocation(readCachedLocation() ?? FALLBACK_LOCATION);
+          setLoading(false);
+        }
+      }
     };
 
     void setupPermissionListener();
