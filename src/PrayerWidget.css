@@ -32,6 +32,7 @@ button,
 input,
 select,
 textarea {
+  font-family: inherit;
   -webkit-app-region: no-drag;
 }
 
@@ -44,7 +45,7 @@ textarea {
 }
 
 .app-container {
-  width: 360px;
+  width: 375px;
   max-width: 100vw;
   height: 100%;
   margin: 0;
@@ -69,8 +70,6 @@ textarea {
   gap: 0;
   margin: 0;
   justify-content: space-between;
-  font-family: 'Product Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
-    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   overflow: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
 }

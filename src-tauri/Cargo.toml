@@ -8,8 +8,6 @@ repository = ""
 edition = "2021"
 rust-version = "1.77.2"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [lib]
 name = "app_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
@@ -18,13 +16,14 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2.5.6", features = [] }
 
 [dependencies]
-tauri = { version = "2.10", features = ["tray-icon"] }
+tauri = { version = "2.12.1", features = ["tray-icon"] }
+
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 log = "0.4"
 
 tauri-plugin-log = "2"
-
-tauri-plugin-autostart = "2"
-tauri-plugin-opener = "2"
+tauri-plugin-autostart = { version = "=2.5.1" }
+tauri-plugin-opener = { version = "=2.5.3" }
 tauri-plugin-notification = "2"
+tauri-plugin-geolocation = { version = "=2.3.3" }

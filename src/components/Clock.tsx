@@ -37,7 +37,7 @@ export function Clock({ currentTime, timezone }: ClockProps) {
           <div className="ampm-badge">
             <svg
               width="17"
-              height="21"
+              height="16"
               viewBox="0 0 19 21"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -53,7 +53,7 @@ export function Clock({ currentTime, timezone }: ClockProps) {
         <div className="day-badge">
           <svg
             width="17"
-            height="18"
+            height="16"
             viewBox="0 0 17 18"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"

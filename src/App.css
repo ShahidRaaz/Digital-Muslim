@@ -7,9 +7,9 @@
   --text-secondary: #444444;
   --card-bg: #ffffff;
   --card-border: #e0e0e0;
-  --accent-primary: #008080;
+  --accent-primary: #007575;
   --accent-light: #13b8b8;
-  --logo-bg: #008080;
+  --logo-bg: #007575;
   --logo-text: #ffffff;
   --border: rgba(255, 255, 255, 0.75);
 }
@@ -29,3 +29,35 @@
   --border: rgba(0, 0, 0, 0.5);
 }
 
+
+@font-face {
+  font-family: "Product Sans";
+  src: url("./assets/fonts/ProductSans-Regular.ttf") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Product Sans";
+  src: url("./assets/fonts/ProductSans-Medium.ttf") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Product Sans";
+  src: url("./assets/fonts/ProductSans-Italic.ttf") format("woff2");
+  font-weight: 500;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Product Sans";
+  src: url("./assets/fonts/ProductSans-SemiBold.ttf") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+}
+
+body {
+  font-family: "Product Sans";
+}

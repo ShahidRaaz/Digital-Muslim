@@ -29,7 +29,6 @@
 .timer-value {
   font-size: 48px;
   font-weight: 700;
-  font-family: 'Product Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   color: var(--text-primary);
   line-height: 1;
 }
@@ -42,11 +41,10 @@
 }
 
 .timer-label {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-secondary);
   text-transform: lowercase;
-  font-weight: 500;
-  letter-spacing: 0.2px;
+  font-weight: 400;
 }
 
 .timer-info {
@@ -64,8 +62,8 @@
   gap: 6px;
   padding: 4px 10px;
   border-radius: 4px;
-  font-size: 16px;
-  font-weight: 400;
+  font-size: 14px;
+  font-weight: 500;
   letter-spacing: 0.2px;
   white-space: nowrap;
 }

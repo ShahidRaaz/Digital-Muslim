@@ -227,7 +227,7 @@ margin-top: 8px;
   border: none;
   background: transparent;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   border-radius: 6px;
   cursor: pointer;
@@ -246,7 +246,7 @@ margin-top: 8px;
 .switcher-btn.active {
   background-color: var(--accent-primary);
   color: var(--bg-primary);
-  font-weight: 600;
+  font-weight: 500;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -316,8 +316,8 @@ margin-top: 8px;
   color: var(--stroke);
   border: none;
   border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 }

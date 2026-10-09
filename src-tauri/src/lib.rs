@@ -2,11 +2,16 @@ const TRAY_MENU_TOGGLE: &str = "tray_toggle";
 const TRAY_MENU_SETTINGS: &str = "tray_settings";
 const TRAY_MENU_QUIT: &str = "tray_quit";
 
-use tauri_plugin_autostart::MacosLauncher;
-use tauri::{Emitter, Manager, menu::{Menu, MenuItem}, tray::{TrayIconBuilder, TrayIconEvent, MouseButton, MouseButtonState}, include_image};
-use tauri_plugin_notification::NotificationExt;
-use std::sync::Mutex;
 use serde::Deserialize;
+use std::sync::Mutex;
+use tauri::{
+    include_image,
+    menu::{Menu, MenuItem},
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+    Emitter, Manager,
+};
+use tauri_plugin_autostart::MacosLauncher;
+use tauri_plugin_notification::NotificationExt;
 
 #[derive(Clone, Deserialize, Debug)]
 pub struct Region {
@@ -38,13 +43,17 @@ pub fn start_mouse_tracking<R: tauri::Runtime>(app: tauri::AppHandle<R>) {
                         let rel_y = cursor_pos.y - window_pos.y as f64;
 
                         let mut is_inside = false;
-                        
+
                         // Create an inner scope to quickly check and drop the lock
                         {
                             let state = app.state::<InteractiveRegions>();
                             if let Ok(regions) = state.0.lock() {
                                 for r in regions.iter() {
-                                    if rel_x >= r.x && rel_x <= r.x + r.width && rel_y >= r.y && rel_y <= r.y + r.height {
+                                    if rel_x >= r.x
+                                        && rel_x <= r.x + r.width
+                                        && rel_y >= r.y
+                                        && rel_y <= r.y + r.height
+                                    {
                                         is_inside = true;
                                         break;
                                     }
@@ -81,18 +90,20 @@ fn position_window(app: &tauri::AppHandle) {
                 let taskbar_h = 48.0;
                 let work_area_h = screen_h - taskbar_h;
 
-                let win_w = 360.0;
+                let win_w = 375.0;
                 let win_h = (work_area_h * 0.98).min(900.0);
 
                 let _ = window.set_size(tauri::LogicalSize::new(win_w, win_h));
-                let _ = window.set_size(tauri::Size::Logical(tauri::LogicalSize::new(win_w, win_h)));
+                let _ =
+                    window.set_size(tauri::Size::Logical(tauri::LogicalSize::new(win_w, win_h)));
 
                 let margin = 12.0;
                 let x = screen_w - win_w - margin;
                 let y = (work_area_h - win_h) / 2.0;
 
                 let _ = window.set_position(tauri::LogicalPosition::new(x, y));
-                let _ = window.set_position(tauri::Position::Logical(tauri::LogicalPosition::new(x, y)));
+                let _ = window
+                    .set_position(tauri::Position::Logical(tauri::LogicalPosition::new(x, y)));
             }
         }
     }
@@ -100,11 +111,7 @@ fn position_window(app: &tauri::AppHandle) {
 
 #[tauri::command]
 fn show_notification(app: tauri::AppHandle, title: &str, body: &str) {
-    let _ = app.notification()
-        .builder()
-        .title(title)
-        .body(body)
-        .show();
+    let _ = app.notification().builder().title(title).body(body).show();
 }
 
 #[tauri::command]
@@ -135,11 +142,18 @@ fn toggle_main_window<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
 #[cfg(target_os = "windows")]
 fn create_tray(app: &tauri::App) -> tauri::Result<tauri::tray::TrayIcon> {
     let window = app.get_webview_window("main");
-    let visible = window.as_ref().map(|w| w.is_visible().unwrap_or(true)).unwrap_or(true);
-    let toggle_label = if visible { "Hide Widget" } else { "Show Widget" };
+    let visible = window
+        .as_ref()
+        .map(|w| w.is_visible().unwrap_or(true))
+        .unwrap_or(true);
+    let toggle_label = if visible {
+        "Hide Widget"
+    } else {
+        "Show Widget"
+    };
 
     let toggle = MenuItem::with_id(app, TRAY_MENU_TOGGLE, toggle_label, true, None::<&str>)?;
-    let toggle_clone = toggle.clone();  // Clone for closure capture
+    let toggle_clone = toggle.clone(); // Clone for closure capture
     let settings = MenuItem::with_id(app, TRAY_MENU_SETTINGS, "Settings", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, TRAY_MENU_QUIT, "Quit", true, None::<&str>)?;
 
@@ -181,7 +195,8 @@ fn create_tray(app: &tauri::App) -> tauri::Result<tauri::tray::TrayIcon> {
                 button: MouseButton::Left,
                 button_state: MouseButtonState::Up,
                 ..
-            } = event {
+            } = event
+            {
                 toggle_main_window(&tray.app_handle());
             }
         })
@@ -193,10 +208,17 @@ fn create_tray(app: &tauri::App) -> tauri::Result<tauri::tray::TrayIcon> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .manage(InteractiveRegions(Mutex::new(vec![
-            Region { x: 0.0, y: 0.0, width: 99999.0, height: 99999.0 }
-        ])))
-        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None))
+        .plugin(tauri_plugin_geolocation::init())
+        .manage(InteractiveRegions(Mutex::new(vec![Region {
+            x: 0.0,
+            y: 0.0,
+            width: 99999.0,
+            height: 99999.0,
+        }])))
+        .plugin(tauri_plugin_autostart::init(
+            MacosLauncher::LaunchAgent,
+            None,
+        ))
         .plugin(tauri_plugin_notification::init())
         .setup(|app| {
             let handle = app.handle();
@@ -220,7 +242,7 @@ pub fn run() {
 
             #[cfg(target_os = "windows")]
             {
-                let _tray: tauri::tray::TrayIcon= create_tray(app)?;
+                let _tray: tauri::tray::TrayIcon = create_tray(app)?;
             }
 
             start_mouse_tracking(handle.clone());

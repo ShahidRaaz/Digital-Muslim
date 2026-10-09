@@ -32,7 +32,6 @@
   font-size: 12px;
   color: var(--text-primary);
   font-weight: 500;
-  line-height: 1.2;
 }
 
 .footer-icon {
@@ -40,11 +39,4 @@
   height: 24px;
   object-fit: contain;
   flex-shrink: 0;
-}
-
-/* Responsive */
-@media (max-width: 345px) {
-  .footer-text {
-    font-size: 7px;
-  }
 }
