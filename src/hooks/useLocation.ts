@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import useSettingsStore from '../store/settingsStore';
 
-interface Location {
+export interface Location {
   latitude: number;
   longitude: number;
   name: string;
@@ -16,21 +16,12 @@ const FALLBACK_LOCATION: Location = {
   timezone: 'Asia/Riyadh',
 };
 
-// Stop early once a fix is at least this accurate (metres)
-const TARGET_ACCURACY_M = 50;
-// Maximum time to keep refining the position before using the best fix so far
-const MAX_LOCATION_WAIT_MS = 20000;
-
 function readCachedLocation(): Location | null {
   try {
     const raw = localStorage.getItem(AUTO_LOCATION_CACHE_KEY);
-
-    if (!raw) {
-      return null;
-    }
+    if (!raw) return null;
 
     const parsed = JSON.parse(raw) as Partial<Location>;
-
     if (
       typeof parsed.latitude === 'number' &&
       typeof parsed.longitude === 'number' &&
@@ -45,7 +36,6 @@ function readCachedLocation(): Location | null {
       };
     }
   } catch {}
-
   return null;
 }
 
@@ -55,87 +45,176 @@ function writeCachedLocation(location: Location) {
   } catch {}
 }
 
-// The first fix is often a coarse Wi-Fi/IP estimate, so watch for a few seconds
-// and keep the most accurate reading instead of trusting the first one.
-function getBestPosition(): Promise<GeolocationPosition> {
+/**
+ * Attempts to retrieve browser/OS coordinates via navigator.geolocation.
+ * Uses enableHighAccuracy: false so Windows doesn't stall waiting for hardware GPS.
+ */
+function getBrowserPosition(timeoutMs = 4000): Promise<{ latitude: number; longitude: number }> {
   return new Promise((resolve, reject) => {
-    let best: GeolocationPosition | null = null;
-    let lastError: { code: number } | null = null;
-    let done = false;
-    let watchId = -1;
+    if (!navigator.geolocation) {
+      return reject(new Error('Geolocation not supported'));
+    }
 
-    const finish = () => {
-      if (done) return;
-      done = true;
-      clearTimeout(timer);
-      if (watchId !== -1) navigator.geolocation.clearWatch(watchId);
-      if (best) resolve(best);
-      else reject(lastError ?? { code: 3 });
-    };
-
-    const timer = setTimeout(finish, MAX_LOCATION_WAIT_MS);
-
-    watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        if (!best || position.coords.accuracy < best.coords.accuracy) {
-          best = position;
-        }
-        if (position.coords.accuracy <= TARGET_ACCURACY_M) {
-          finish();
-        }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        resolve({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        });
       },
       (err) => {
-        lastError = err;
-        // Permission denied will not recover; other errors may, so keep waiting
-        if (err.code === 1) finish();
+        reject(err);
       },
       {
-        enableHighAccuracy: true,
-        timeout: MAX_LOCATION_WAIT_MS,
-        maximumAge: 0, // Never reuse a cached (possibly coarse) position
+        enableHighAccuracy: false,
+        timeout: timeoutMs,
+        maximumAge: 60000,
       }
     );
   });
 }
 
-async function getLocationName(latitude: number, longitude: number): Promise<{ name: string; timezone: string }> {
+/**
+ * Reverse geocodes coordinates to a human-friendly city name and timezone.
+ */
+async function getLocationName(
+  latitude: number,
+  longitude: number
+): Promise<{ name: string; timezone: string }> {
   try {
-    // Using BigDataCloud's free reverse geocoding API which is highly accurate for city names
     const response = await fetch(
       `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
     );
 
     if (!response.ok) throw new Error('Geocoding failed');
-    
     const data = await response.json();
 
-    // Priority: city > locality > principalSubdivision (state/province) > country
-    const name = data.city || data.locality || data.principalSubdivision || data.countryName || 'Unknown Location';
+    const cityName =
+      data.city ||
+      data.locality ||
+      data.principalSubdivision ||
+      data.countryName ||
+      'Current Location';
+    const country = data.countryName ? `, ${data.countryName}` : '';
+    const name = data.city ? `${data.city}${country}` : cityName;
 
-    // Fetch timezone from timeapi.io
     let timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     try {
-      const tzResp = await fetch(`https://timeapi.io/api/timezone/coordinate?latitude=${latitude}&longitude=${longitude}`);
+      const tzResp = await fetch(
+        `https://timeapi.io/api/timezone/coordinate?latitude=${latitude}&longitude=${longitude}`
+      );
       if (tzResp.ok) {
         const tzData = await tzResp.json();
         if (tzData.timeZone) timezone = tzData.timeZone;
       }
-    } catch { /* fall back to system timezone */ }
-    
+    } catch {
+      // Fall back to system timezone
+    }
+
     return { name, timezone };
   } catch (error) {
     console.error('Error fetching location name:', error);
-    return { name: 'Unknown Location', timezone: Intl.DateTimeFormat().resolvedOptions().timeZone };
+    return {
+      name: 'Current Location',
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    };
+  }
+}
+
+/**
+ * Fallback IP-based geolocation. Works instantly across all desktop platforms without requiring GPS.
+ */
+async function fetchIpLocation(): Promise<Location | null> {
+  // Strategy 1: BigDataCloud reverse geocode client without lat/lon uses caller IP
+  try {
+    const resp = await fetch(
+      'https://api.bigdatacloud.net/data/reverse-geocode-client?localityLanguage=en'
+    );
+    if (resp.ok) {
+      const data = await resp.json();
+      if (typeof data.latitude === 'number' && typeof data.longitude === 'number') {
+        const cityName =
+          data.city ||
+          data.locality ||
+          data.principalSubdivision ||
+          data.countryName ||
+          'Current Location';
+        const country = data.countryName ? `, ${data.countryName}` : '';
+        const name = data.city ? `${data.city}${country}` : cityName;
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        return {
+          latitude: data.latitude,
+          longitude: data.longitude,
+          name,
+          timezone,
+        };
+      }
+    }
+  } catch (e) {
+    console.warn('BigDataCloud IP detection failed:', e);
   }
 
+  // Strategy 2: freeipapi.com
+  try {
+    const resp = await fetch('https://freeipapi.com/api/json');
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.latitude && data.longitude) {
+        const name = data.cityName
+          ? `${data.cityName}, ${data.countryName}`
+          : data.countryName || 'Current Location';
+        const timezone = data.timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+        return {
+          latitude: parseFloat(data.latitude),
+          longitude: parseFloat(data.longitude),
+          name,
+          timezone,
+        };
+      }
+    }
+  } catch (e) {
+    console.warn('freeipapi failed:', e);
+  }
+
+  // Strategy 3: ipwho.is
+  try {
+    const resp = await fetch('https://ipwho.is/');
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.success && data.latitude && data.longitude) {
+        const name = data.city
+          ? `${data.city}, ${data.country}`
+          : data.country || 'Current Location';
+        const timezone = data.timezone?.id || Intl.DateTimeFormat().resolvedOptions().timeZone;
+        return {
+          latitude: data.latitude,
+          longitude: data.longitude,
+          name,
+          timezone,
+        };
+      }
+    }
+  } catch (e) {
+    console.warn('ipwho.is failed:', e);
+  }
+
+  return null;
 }
 
 export function useLocation() {
-  const locationMode = useSettingsStore((state) => state.locationMode);
-  const manualCity = useSettingsStore((state) => state.manualCity);
-  const manualCityLat = useSettingsStore((state) => state.manualCityLat);
-  const manualCityLon = useSettingsStore((state) => state.manualCityLon);
-  const manualCityTimezone = useSettingsStore((state) => state.manualCityTimezone);
+  const {
+    locationMode,
+    manualCity,
+    manualCityLat,
+    manualCityLon,
+    manualCityTimezone,
+    autoCity,
+    autoCityLat,
+    autoCityLon,
+    autoCityTimezone,
+    setAutoLocation,
+    locationRefreshTrigger,
+  } = useSettingsStore();
 
   const buildManualLocation = (): Location => ({
     latitude: manualCityLat ?? FALLBACK_LOCATION.latitude,
@@ -148,29 +227,22 @@ export function useLocation() {
     if (locationMode === 'manual') {
       return buildManualLocation();
     }
-
+    if (autoCity && autoCityLat && autoCityLon) {
+      return {
+        name: autoCity,
+        latitude: autoCityLat,
+        longitude: autoCityLon,
+        timezone: autoCityTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+      };
+    }
     return readCachedLocation();
   });
-  const [loading, setLoading] = useState(() => locationMode !== 'manual' && !readCachedLocation());
+
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let isMounted = true; // Prevents state updates after unmount
-
-    // Setup a listener for permission changes
-    let permissionStatus: PermissionStatus | null = null;
-    const setupPermissionListener = async () => {
-      if ('permissions' in navigator) {
-        try {
-          permissionStatus = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
-          permissionStatus.onchange = () => {
-            if (isMounted && permissionStatus?.state === 'granted') {
-              void fetchLocation();
-            }
-          };
-        } catch (e) { /* Permissions API not supported for geolocation in this environment */ }
-      }
-    };
+    let isMounted = true;
 
     const fetchLocation = async () => {
       setError(null);
@@ -178,6 +250,7 @@ export function useLocation() {
       if (locationMode === 'manual') {
         if (isMounted) {
           setLocation(buildManualLocation());
+          setLoading(false);
         }
         return;
       }
@@ -186,48 +259,80 @@ export function useLocation() {
         setLoading(true);
       }
 
-      if (!navigator.geolocation) {
-        if (isMounted) {
-          setError('Geolocation not supported by your browser.');
-          setLocation(readCachedLocation() ?? FALLBACK_LOCATION);
-          setLoading(false);
-        }
-        return;
+      let coords: { latitude: number; longitude: number } | null = null;
+
+      // 1. Try browser/OS geolocation with a brief 3.5s timeout
+      try {
+        coords = await getBrowserPosition(3500);
+      } catch (err) {
+        console.warn('Browser geolocation unavailable/timed out, attempting IP location...', err);
       }
 
-      try {
-        const position = await getBestPosition();
-        const { latitude, longitude } = position.coords;
-
-        // Reverse geocode the coordinates and get timezone
-        const { name, timezone } = await getLocationName(latitude, longitude);
-        const resolvedLocation = { latitude, longitude, name, timezone };
-
-        writeCachedLocation(resolvedLocation);
-
-        if (isMounted) {
-          setLocation(resolvedLocation);
-          setLoading(false);
+      // 2. If browser geolocation succeeded, reverse geocode it
+      if (coords && isMounted) {
+        try {
+          const { name, timezone } = await getLocationName(coords.latitude, coords.longitude);
+          const resolvedLocation: Location = {
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            name,
+            timezone,
+          };
+          writeCachedLocation(resolvedLocation);
+          setAutoLocation(name, resolvedLocation.latitude, resolvedLocation.longitude, timezone);
+          if (isMounted) {
+            setLocation(resolvedLocation);
+            setLoading(false);
+            return;
+          }
+        } catch (err) {
+          console.warn('Reverse geocoding failed:', err);
         }
-      } catch (err) {
-        console.error('Geolocation error:', err);
-        if (isMounted) {
-          const code = (err as { code?: number })?.code;
-          setError(code === 1 ? 'Location access denied.' : 'Location request timed out.');
-          setLocation(readCachedLocation() ?? FALLBACK_LOCATION);
-          setLoading(false);
+      }
+
+      // 3. Fallback: IP-based geolocation (reliable on desktop without GPS)
+      if (isMounted) {
+        try {
+          const ipLoc = await fetchIpLocation();
+          if (ipLoc && isMounted) {
+            writeCachedLocation(ipLoc);
+            setAutoLocation(ipLoc.name, ipLoc.latitude, ipLoc.longitude, ipLoc.timezone);
+            setLocation(ipLoc);
+            setLoading(false);
+            return;
+          }
+        } catch (err) {
+          console.warn('IP geolocation fallback failed:', err);
         }
+      }
+
+      // 4. Fallback: cached or default
+      if (isMounted) {
+        const cached = readCachedLocation();
+        if (cached) {
+          setLocation(cached);
+          setAutoLocation(cached.name, cached.latitude, cached.longitude, cached.timezone);
+        } else {
+          setError('Could not detect location. Using default.');
+          setLocation(FALLBACK_LOCATION);
+        }
+        setLoading(false);
       }
     };
 
-    void setupPermissionListener();
     void fetchLocation();
 
     return () => {
       isMounted = false;
-      if (permissionStatus) permissionStatus.onchange = null;
     };
-  }, [locationMode, manualCity, manualCityLat, manualCityLon, manualCityTimezone]);
+  }, [
+    locationMode,
+    manualCity,
+    manualCityLat,
+    manualCityLon,
+    manualCityTimezone,
+    locationRefreshTrigger,
+  ]);
 
   return { location, loading, error };
 }

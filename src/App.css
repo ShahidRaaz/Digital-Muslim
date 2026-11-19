@@ -11,7 +11,7 @@
   --accent-light: #13b8b8;
   --logo-bg: #007575;
   --logo-text: #ffffff;
-  --border: rgba(255, 255, 255, 0.75);
+  --border: rgba(255, 255, 255, 0.25);
 }
 
 /* Dark Mode Colors */
@@ -60,4 +60,27 @@
 
 body {
   font-family: "Product Sans";
+}
+
+/* App Wrapper for window positioning and side padding */
+.app-wrapper {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.app-wrapper.medium {
+  width: 100%;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.app-wrapper.fullscreen,
+.app-wrapper.full {
+  width: 100vw;
+  height: 100vh;
 }

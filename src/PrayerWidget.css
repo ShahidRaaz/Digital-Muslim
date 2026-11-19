@@ -7,7 +7,7 @@
 }
 
 
-*::-webkit-scrollbar {
+.prayer-widget *::-webkit-scrollbar {
   display: none;
 }
 
@@ -52,10 +52,10 @@ textarea {
   padding: 0;
   border-radius: 25px;
   border: 10px solid var(--border);
-  overflow: hidden;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
   background: var(--border);
+  overflow: hidden;
+  box-sizing: border-box;
+  backdrop-filter: blur(4px);
 }
 
 .prayer-widget {
@@ -64,7 +64,7 @@ textarea {
   background: var(--bg-primary);
   color: var(--text-primary);
   padding: 12px;
-  border-radius: 10px;
+  border-radius: 15px;
   display: flex;
   flex-direction: column;
   gap: 0;

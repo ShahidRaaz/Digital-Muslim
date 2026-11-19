@@ -2,12 +2,19 @@ import { useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { PrayerWidget } from './PrayerWidget';
 import { FullScreenWidget } from './FullScreenWidget';
-import useSettingsStore from './store/settingsStore';
+import { MediumWidget } from './MediumWidget';
+import useSettingsStore, { WindowMode } from './store/settingsStore';
 import './App.css';
 
+function normalizeWindowMode(mode: string | null): WindowMode {
+  if (mode === 'medium') return 'medium';
+  if (mode === 'fullscreen' || mode === 'full') return 'full';
+  return 'large';
+}
+
 function App() {
-  const [windowMode, setWindowMode] = useState<'sidebar' | 'fullscreen'>(() => {
-    return (localStorage.getItem('windowMode') as 'sidebar' | 'fullscreen') || 'sidebar';
+  const [windowMode, setWindowMode] = useState<WindowMode>(() => {
+    return normalizeWindowMode(localStorage.getItem('windowMode'));
   });
   const settings = useSettingsStore();
 
@@ -40,11 +47,11 @@ function App() {
     document.addEventListener('contextmenu', disableContextMenu);
 
     // Restore the saved window mode on boot
-    const savedMode = localStorage.getItem('windowMode') || 'sidebar';
+    const savedMode = normalizeWindowMode(localStorage.getItem('windowMode'));
     invoke('set_window_mode', { mode: savedMode }).catch(console.error);
 
     const handleModeChange = () => {
-      setWindowMode((localStorage.getItem('windowMode') as 'sidebar' | 'fullscreen') || 'sidebar');
+      setWindowMode(normalizeWindowMode(localStorage.getItem('windowMode')));
     };
 
     window.addEventListener('windowModeChanged', handleModeChange);
@@ -55,12 +62,16 @@ function App() {
   }, []);
 
   return (
-    <div className={`app-container ${windowMode}`}>
-      {windowMode === 'fullscreen' ? (
-        <FullScreenWidget />
-      ) : (
-        <PrayerWidget />
-      )}
+    <div className={`app-wrapper ${windowMode}`}>
+      <div className={`app-container ${windowMode}`}>
+        {windowMode === 'full' ? (
+          <FullScreenWidget />
+        ) : windowMode === 'medium' ? (
+          <MediumWidget />
+        ) : (
+          <PrayerWidget />
+        )}
+      </div>
     </div>
   );
 }

@@ -1,0 +1,139 @@
+/* Container override for medium mode */
+.app-container.medium {
+  width: 375px;
+  height: auto;
+  min-height: fit-content;
+  border-radius: 25px;
+  border: 10px solid var(--border);
+  background: var(--border);
+  overflow: hidden;
+  box-sizing: border-box;
+  backdrop-filter: blur(4px);
+}
+
+/* Medium Widget Styles */
+.medium-widget {
+  width: 100%;
+  height: auto;
+  min-height: fit-content;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 14px 14px 6px 14px;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.medium-widget.dragging,
+.medium-widget.dragging * {
+  cursor: grabbing !important;
+}
+
+/* Header */
+.medium-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.medium-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: grab;
+}
+
+.medium-logo-box {
+  width: 30px;
+  height: 30px;
+  background: var(--logo-bg);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.medium-brand-text {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.15;
+  color: var(--text-primary);
+}
+
+.medium-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.medium-location-pill {
+  display: flex;
+  height: 34px;
+  align-items: center;
+  gap: 6px;
+  background: var(--card-bg);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.medium-location-pill:hover {
+  opacity: 0.85;
+}
+
+.medium-options-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-bg);
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--accent-primary);
+  transition: opacity 0.2s ease-in-out;
+}
+
+.medium-options-btn:hover {
+  opacity: 0.85;
+}
+
+/* Footer */
+.medium-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 2px 4px 4px 4px;
+  cursor: grab;
+}
+
+.medium-footer-text {
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.medium-hidayah-brand {
+  display: flex;
+  align-items: center;
+  cursor: grab;
+}
+

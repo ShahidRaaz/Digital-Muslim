@@ -3,10 +3,18 @@
   position: fixed;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.25);
-  border-radius: 20px;
+  border-radius: 15px;
   z-index: 1000;
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
+  cursor: default;
+}
+
+/* Fullscreen mode covers the entire monitor */
+.app-wrapper.fullscreen .settings-backdrop,
+.app-wrapper.full .settings-backdrop {
+  inset: 0;
+  border-radius: 0;
 }
 
 /* Settings Modal Container */
@@ -21,19 +29,119 @@
   border-radius: 12px;
   max-width: 340px;
   width: 90%;
-  max-height: 90vh;
+  max-height: calc(100vh - 36px);
   display: flex;
   flex-direction: column;
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
+  cursor: default;
   transition: opacity 0.3s ease-out, visibility 0.3s;
+}
+
+.app-wrapper.medium .settings-modal,
+.medium-widget .settings-modal {
+  max-height: calc(90vh - 36px);
 }
 
 .settings-modal.is-open {
   opacity: 1;
   pointer-events: auto;
   visibility: visible;
+}
+
+/* Location View Modal Specifics */
+.settings-modal.location-view {
+  min-height: 320px;
+}
+
+.settings-modal.location-view .settings-content {
+  min-height: 230px;
+  padding-top: 10px;
+}
+
+.location-settings-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.location-info-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-top: 6px;
+}
+
+.location-info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.location-info-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.location-status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: color-mix(in srgb, var(--accent-primary) 15%, transparent);
+  color: var(--accent-primary);
+}
+
+.location-info-city {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.location-info-sub {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.location-info-note {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.location-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background-color: var(--accent-primary);
+  color: #ffffff;
+  border: none;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  width: fit-content;
+}
+
+.location-refresh-btn:hover {
+  opacity: 0.9;
 }
 
 .settings-backdrop.is-open {
@@ -99,10 +207,10 @@
   border-bottom: 1px solid var(--border-color);
 }
 
-.settings-header h2 {
+.settings-header h3 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .close-btn {
@@ -127,7 +235,7 @@
   flex: 1;
   overflow-y: auto;
   padding-top: 0px;
-  padding-bottom: 4px;
+  padding-bottom: 8px;
   padding-left: 16px;
   padding-right: 16px;
   display: flex;
@@ -332,21 +440,28 @@ margin-top: 8px;
 }
 
 /* Scrollbar Styling */
+.settings-content {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-primary) transparent;
+}
+
 .settings-content::-webkit-scrollbar {
-  width: 4px;
+  display: block !important;
+  width: 6px !important;
 }
 
 .settings-content::-webkit-scrollbar-track {
-  background: transparent;
+  background: color-mix(in srgb, var(--card-bg) 50%, transparent);
+  border-radius: 4px;
 }
 
 .settings-content::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 2px;
+  background: var(--accent-primary) !important;
+  border-radius: 4px;
 }
 
 .settings-content::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
+  background: color-mix(in srgb, var(--accent-primary) 80%, black) !important;
 }
 
 .opacity-50 {

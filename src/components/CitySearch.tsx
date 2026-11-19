@@ -105,7 +105,7 @@ export function CitySearch() {
     setIsOpen(false);
 
     const timezone = await fetchTimezone(lat, lon);
-    setManualCityFull(displayName, lat, lon, timezone);
+    setManualCityFull(displayName, lat, lon, timezone, country);
   };
 
   return (

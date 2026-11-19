@@ -78,7 +78,6 @@ fn greet(name: &str) -> String {
     format!("Hello, {}!", name)
 }
 
-#[tauri::command]
 fn position_window(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         if let Ok(monitors) = app.available_monitors() {
@@ -109,20 +108,182 @@ fn position_window(app: &tauri::AppHandle) {
     }
 }
 
+static MEDIUM_DRAG_START: Mutex<Option<(f64, f64)>> = Mutex::new(None);
+
+fn position_window_medium(app: &tauri::AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        if let Ok(monitors) = app.available_monitors() {
+            if let Some(monitor) = monitors.first() {
+                let scale = monitor.scale_factor();
+                let mon_pos = monitor.position();
+                let mon_x = mon_pos.x as f64 / scale;
+                let mon_y = mon_pos.y as f64 / scale;
+                let screen_w = monitor.size().width as f64 / scale;
+
+                let win_w = 375.0;
+                let win_h = 440.0;
+                let margin = 12.0;
+
+                let _ = window.set_size(tauri::LogicalSize::new(win_w, win_h));
+                let _ =
+                    window.set_size(tauri::Size::Logical(tauri::LogicalSize::new(win_w, win_h)));
+
+                let x = mon_x + screen_w - win_w - margin;
+                let y = mon_y + margin;
+
+                let _ = window.set_position(tauri::LogicalPosition::new(x, y));
+                let _ = window
+                    .set_position(tauri::Position::Logical(tauri::LogicalPosition::new(x, y)));
+            }
+        }
+    }
+}
+
+#[tauri::command]
+fn start_medium_drag(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("main") {
+        if let Ok(pos) = window.outer_position() {
+            if let Ok(scale) = window.scale_factor() {
+                let logical_x = pos.x as f64 / scale;
+                let logical_y = pos.y as f64 / scale;
+                if let Ok(mut lock) = MEDIUM_DRAG_START.lock() {
+                    *lock = Some((logical_x, logical_y));
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn move_medium_window(app: tauri::AppHandle, delta_x: f64, delta_y: f64) -> Result<(), String> {
+    let start_pos = {
+        if let Ok(lock) = MEDIUM_DRAG_START.lock() {
+            *lock
+        } else {
+            None
+        }
+    };
+
+    if let Some((start_x, start_y)) = start_pos {
+        if let Some(window) = app.get_webview_window("main") {
+            let target_x = start_x + delta_x;
+            let target_y = start_y + delta_y;
+
+            if let Ok(monitors) = app.available_monitors() {
+                if let Some(monitor) = monitors.first() {
+                    let scale = monitor.scale_factor();
+                    let mon_pos = monitor.position();
+                    let mon_x = mon_pos.x as f64 / scale;
+                    let mon_y = mon_pos.y as f64 / scale;
+                    let screen_w = monitor.size().width as f64 / scale;
+                    let screen_h = monitor.size().height as f64 / scale;
+
+                    let win_w = 375.0;
+                    let win_h = if let Ok(size) = window.inner_size() {
+                        size.height as f64 / scale
+                    } else {
+                        440.0
+                    };
+                    let margin = 12.0;
+                    let taskbar_h = 48.0;
+
+                    let min_x = mon_x + margin;
+                    let max_x = (mon_x + screen_w - win_w - margin).max(min_x);
+                    let min_y = mon_y + margin;
+                    let max_y = (mon_y + screen_h - taskbar_h - win_h - margin).max(min_y);
+
+                    let clamped_x = target_x.clamp(min_x, max_x);
+                    let clamped_y = target_y.clamp(min_y, max_y);
+
+                    let _ = window.set_position(tauri::LogicalPosition::new(clamped_x, clamped_y));
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn end_medium_drag() -> Result<(), String> {
+    if let Ok(mut lock) = MEDIUM_DRAG_START.lock() {
+        *lock = None;
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn set_medium_window_size(app: tauri::AppHandle, _width: f64, height: f64) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("main") {
+        let win_w = 375.0;
+        let win_h = height.max(100.0);
+        let _ = window.set_size(tauri::LogicalSize::new(win_w, win_h));
+        let _ = window.set_size(tauri::Size::Logical(tauri::LogicalSize::new(win_w, win_h)));
+
+        if let Ok(pos) = window.outer_position() {
+            if let Ok(scale) = window.scale_factor() {
+                let current_y = pos.y as f64 / scale;
+                let current_x = pos.x as f64 / scale;
+                if let Ok(monitors) = app.available_monitors() {
+                    if let Some(monitor) = monitors.first() {
+                        let mon_pos = monitor.position();
+                        let mon_y = mon_pos.y as f64 / scale;
+                        let screen_h = monitor.size().height as f64 / scale;
+                        let taskbar_h = 48.0;
+                        let margin = 12.0;
+                        let max_y = (mon_y + screen_h - taskbar_h - win_h - margin).max(mon_y + margin);
+                        if current_y > max_y {
+                            let _ = window.set_position(tauri::LogicalPosition::new(current_x, max_y));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn set_medium_window_height(app: tauri::AppHandle, height: f64) -> Result<(), String> {
+    set_medium_window_size(app, 375.0, height)
+}
+
 #[tauri::command]
 fn show_notification(app: tauri::AppHandle, title: &str, body: &str) {
     let _ = app.notification().builder().title(title).body(body).show();
 }
 
 #[tauri::command]
-fn set_window_mode(app: tauri::AppHandle, mode: String) {
+fn set_window_mode(app: tauri::AppHandle, mode: String, state: tauri::State<InteractiveRegions>) {
     if let Some(window) = app.get_webview_window("main") {
-        if mode == "fullscreen" {
+        if mode == "fullscreen" || mode == "full" {
             let _ = window.set_resizable(true);
             let _ = window.maximize();
+        } else if mode == "medium" {
+            let _ = window.unmaximize();
+            let _ = window.set_resizable(false);
+            let _ = window.set_ignore_cursor_events(false);
+            if let Ok(mut lock) = state.0.lock() {
+                *lock = vec![Region {
+                    x: 0.0,
+                    y: 0.0,
+                    width: 99999.0,
+                    height: 99999.0,
+                }];
+            }
+            position_window_medium(&app);
         } else {
             let _ = window.unmaximize();
             let _ = window.set_resizable(false);
+            let _ = window.set_ignore_cursor_events(false);
+            if let Ok(mut lock) = state.0.lock() {
+                *lock = vec![Region {
+                    x: 0.0,
+                    y: 0.0,
+                    width: 99999.0,
+                    height: 99999.0,
+                }];
+            }
             position_window(&app);
         }
     }
@@ -253,7 +414,12 @@ pub fn run() {
             greet,
             set_window_mode,
             set_interactive_regions,
-            show_notification
+            show_notification,
+            start_medium_drag,
+            move_medium_window,
+            end_medium_drag,
+            set_medium_window_size,
+            set_medium_window_height
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,0 +1,65 @@
+/* Salah info shared styles (reused from Full mode) */
+.fullscreen-prayer-info {
+  display: flex;
+  color: var(--text-primary);
+  user-select: none;
+}
+
+/* Full mode: row layout */
+.fullscreen-prayer-info.salah-info-row {
+  flex-direction: row;
+  align-items: center;
+  justify-items: center;
+  gap: 16px;
+}
+
+/* Medium mode: col layout */
+.fullscreen-prayer-info.salah-info-col {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin: 4px 0;
+}
+
+.fullscreen-prayer-current,
+.fullscreen-prayer-next,
+.fullscreen-prayer-countdown {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  flex-direction: row;
+  gap: 8px;
+}
+
+/* Column layout overrides */
+.fullscreen-prayer-info.salah-info-col .fullscreen-prayer-current,
+.fullscreen-prayer-info.salah-info-col .fullscreen-prayer-next,
+.fullscreen-prayer-info.salah-info-col .fullscreen-prayer-countdown {
+  justify-content: center;
+  width: auto;
+  padding-right: 0;
+}
+
+/* Row layout countdown fixed width to avoid jitter */
+.fullscreen-prayer-info.salah-info-row .fullscreen-prayer-countdown {
+  padding-right: 6px;
+  width: 175px;
+}
+
+.fullscreen-separator {
+  width: 2px;
+  height: 24px;
+  background-color: var(--accent-primary);
+  opacity: 0.25;
+  border-radius: 2px;
+}
+
+.fullscreen-prayer-info .title {
+  color: var(--accent-primary);
+  font-weight: 500;
+}
