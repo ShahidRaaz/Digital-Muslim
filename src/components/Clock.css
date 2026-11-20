@@ -50,7 +50,7 @@
 .timer-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   justify-content: center;
 }
 
@@ -59,10 +59,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 14px;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 18px;
   font-weight: 500;
   letter-spacing: 0.2px;
   white-space: nowrap;

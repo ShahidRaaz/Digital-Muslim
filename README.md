@@ -12,11 +12,14 @@ Get the latest Windows installer directly from GitHub Releases:
 
 👉 **[Download Latest Release (.msi / .exe)](https://github.com/ShahidRaaz/Digital-Muslim/releases/latest)**
 
+*(You can also download the prebuilt bundles directly from the [`release/`](./release) folder in this repository).*
+
 ### How to Install on Windows:
-1. Visit the [GitHub Releases Page](https://github.com/ShahidRaaz/Digital-Muslim/releases/latest).
-2. Download the latest installer file:
-   - **MSI Installer**: `Digital Muslim Widget_x64_en-US.msi` *(Recommended)*
-   - **Setup Executable**: `Digital Muslim Widget_x64-setup.exe`
+1. Visit the [GitHub Releases Page](https://github.com/ShahidRaaz/Digital-Muslim/releases/latest) or browse the [`release/`](./release) folder.
+2. Download the preferred file:
+   - **MSI Installer**: `Digital Muslim Widget_0.1.0_x64_en-US.msi` *(Recommended)*
+   - **Setup Executable**: `Digital Muslim Widget_0.1.0_x64-setup.exe`
+   - **Standalone Executable**: `Digital Muslim Widget.exe`
 3. Double-click the downloaded file and follow the standard installation wizard.
 4. The widget will install and launch automatically!
 

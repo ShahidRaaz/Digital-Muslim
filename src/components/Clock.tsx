@@ -36,12 +36,12 @@ export function Clock({ currentTime, timezone }: ClockProps) {
       <div className="timer-info">
         {timeFormat === '12h' && (
           <div className="ampm-badge">
-            <ClockAmPmIcon width={17} height={16} fill="var(--accent-primary)" />
+            <ClockAmPmIcon width={18} height={19} fill="var(--accent-primary)" />
             {ampm}
           </div>
         )}
         <div className="day-badge">
-          <CalendarDayIcon width={17} height={16} fill="var(--accent-primary)" />
+          <CalendarDayIcon width={18} height={19} fill="var(--accent-primary)" />
           {dayName}
         </div>
       </div>
