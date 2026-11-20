@@ -47,6 +47,9 @@
     "active": true,
     "targets": "all",
     "windows": {
+      "wix": {
+        "language": "en-US"
+      },
       "nsis": {
         "installMode": "perMachine"
       }

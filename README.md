@@ -1,6 +1,26 @@
 # Digital Muslim Desktop Widget
 
-A modern desktop widget application built with React, TypeScript, and Tauri. This project demonstrates how to create a lightweight, performant desktop application using web technologies.
+A modern desktop widget application built with React, TypeScript, and Tauri. This project delivers an elegant, interactive Islamic prayer times, daily dhikr, and Islamic calendar widget for Windows.
+
+---
+
+## 📥 Download & Installation
+
+Get the latest Windows installer directly from GitHub Releases:
+
+[![Download Latest MSI](https://img.shields.io/github/v/release/ShahidRaaz/Digital-Muslim?label=Download%20MSI%20Installer&logo=windows&color=blue)](https://github.com/ShahidRaaz/Digital-Muslim/releases/latest)
+
+👉 **[Download Latest Release (.msi / .exe)](https://github.com/ShahidRaaz/Digital-Muslim/releases/latest)**
+
+### How to Install on Windows:
+1. Visit the [GitHub Releases Page](https://github.com/ShahidRaaz/Digital-Muslim/releases/latest).
+2. Download the latest installer file:
+   - **MSI Installer**: `Digital Muslim Widget_x64_en-US.msi` *(Recommended)*
+   - **Setup Executable**: `Digital Muslim Widget_x64-setup.exe`
+3. Double-click the downloaded file and follow the standard installation wizard.
+4. The widget will install and launch automatically!
+
+---
 
 ## 📋 Project Structure
 
